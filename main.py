@@ -27,12 +27,15 @@ run = True
 dead = False  # are you dead?
 X = 100
 Y = 100
+X1 = 850
+Y2 = 100
 white = (255, 255, 255)
 green = (0, 255, 0)
 blue = (0, 0, 128)
 
 def game_over():  # death function
     global game_over, SPEED, dead, first
+    Save()
     obstacles_list.clear()
     screen.fill((0, 0, 0)) 
     dead = True
@@ -85,6 +88,25 @@ key_d_pressed = False
 
 # To see if its the first game
 first = True
+def Save():
+    global Score
+
+    try:
+        with open('HighScore.txt', 'r') as r:
+            Check = r.readline().strip()
+            if Check == "":
+                Check = 0
+            else:
+                Check = int(Check)
+
+        if Score > Check:
+            with open('HighScore.txt', 'w') as f:
+                f.write(str(Score))
+    except FileNotFoundError:
+
+        with open('HighScore.txt', 'w') as f:
+            f.write(str(Score))
+
 
 # The game loop
 while run:
@@ -99,8 +121,10 @@ while run:
         font = pygame.font.Font('freesansbold.ttf', 32)
         Score = 0
         text = font.render(str(Score), True, green, blue)
+        TextRect2 = text.get_rect()
         textRect = text.get_rect()
         textRect.center = (X // 2, Y // 2)
+        TextRect2.center = (X1 // 2, Y2 // 2)
         pygame.mixer.music.play(loops=-1, start=1, fade_ms=2000)
         first = False
         screen.fill((0, 0, 0))
@@ -169,8 +193,14 @@ while run:
     screen.blit(PLIM, player)
     pygame.draw.rect(screen, (0, 0, 0), botton)
     screen.blit(LAVA, botton)
+
+    with open('HighScore.txt', 'r') as l:
+        checking = l.readline()
+
+    high = font.render(str(checking), True, blue)
     text = font.render(str(Score), True, green)
     screen.blit(text, textRect)
+    screen.blit(high, TextRect2)
     for obs in obstacles_list:
             pygame.draw.rect(screen, (255, 255, 255), obs)
 
@@ -183,7 +213,7 @@ while run:
 
     # Cap the frame rate
     pygame.time.Clock().tick(100)
-
+    Save()
 # At the end of the game loop, you can draw all obstacles
 for obs in all_obstacles:
       pygame.draw.rect(screen, (255, 255, 255), obs)
