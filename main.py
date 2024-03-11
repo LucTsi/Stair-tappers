@@ -32,9 +32,9 @@ Y2 = 100
 white = (255, 255, 255)
 green = (0, 255, 0)
 blue = (0, 0, 128)
-
+Pause = False
 def game_over():  # death function
-    global game_over, SPEED, dead, first
+    global game_over, SPEED, dead, first, Pause
     Save()
     obstacles_list.clear()
     screen.fill((0, 0, 0)) 
@@ -43,9 +43,10 @@ def game_over():  # death function
     player.left = spawn.left
     player.top = spawn.top
     first = True
+    Pause = False
 
 def wait(): # vet inte faktiskt vill inte ta bort om allt går sönder
-    global first, dead
+    global first, dead, Pause
     waiting = True
     while waiting:
         for event in pygame.event.get():
@@ -53,15 +54,11 @@ def wait(): # vet inte faktiskt vill inte ta bort om allt går sönder
                 pygame.quit()
                 sys.exit()
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-                player.left = spawn.left
-                player.top = spawn.top
                 waiting = False
-                screen.fill((0, 0, 0))
-                first = True
-                dead = False
+                Pause = False
 
 def wating(): # Wait before game and after death
-    global SPEED
+    global SPEED, first
     waiting = True
     while waiting:
         for event in pygame.event.get():
@@ -71,6 +68,7 @@ def wating(): # Wait before game and after death
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
                 waiting = False
                 SPEED = 3
+                first = False
 # Function to make the platforms
 def new_obs():
     global direct
@@ -85,6 +83,7 @@ def new_obs():
 # Variables to track key pressed
 key_a_pressed = False
 key_d_pressed = False
+key_space_pressed = False
 
 # To see if its the first game
 first = True
@@ -111,6 +110,7 @@ def Save():
 # The game loop
 while run:
     if first:  # specific stuff to happen when you just enter the game
+        print("first1")
         pygame.mixer.music.stop()
         obstacles_list.append(pygame.Rect((player.left - 62, player.top - 50, 41, 9)))
         direct = "LEFT"
@@ -118,6 +118,7 @@ while run:
         spedd = 1
         score = 0
         wating()
+        Pause = False
         font = pygame.font.Font('freesansbold.ttf', 32)
         Score = 0
         text = font.render(str(Score), True, green, blue)
@@ -128,6 +129,11 @@ while run:
         pygame.mixer.music.play(loops=-1, start=1, fade_ms=2000)
         first = False
         screen.fill((0, 0, 0))
+        Pause = False
+        first = False
+        print("first2")
+
+
 
         
     for event in pygame.event.get():  # quit
@@ -141,8 +147,10 @@ while run:
     if player.colliderect(botton):
         game_over()
 
+
+
     # Check for A key press
-    if keys[pygame.K_LEFT] and not key_a_pressed:
+    if keys[pygame.K_LEFT] and not key_a_pressed and Pause == False:
         if direct == "LEFT":
             player.left = obstacles_list[-1].left + 8
             player.top = obstacles_list[-1].top - 25
@@ -160,7 +168,7 @@ while run:
         key_a_pressed = False
 
     # Check for D key press
-    if keys[pygame.K_RIGHT] and not key_d_pressed:
+    if keys[pygame.K_RIGHT] and not key_d_pressed and Pause == False:
         if direct == "RIGHT":
             player.left = obstacles_list[-1].left + 8
             player.top = obstacles_list[-1].top - 25
@@ -178,13 +186,36 @@ while run:
     elif not keys[pygame.K_RIGHT]:
         key_d_pressed = False
     # makes the game move down and becomes faster every sec
-    SPEED = spedd + 0.0005
-    spedd = SPEED
+    if Pause == False:
+        SPEED = spedd + 0.0005
+        spedd = SPEED
 
 
-    player.top += SPEED
-    for obs in obstacles_list:
-        obs.top += SPEED
+    if keys[pygame.K_ESCAPE] and not key_space_pressed and first == False:
+        print("space")
+        if Pause == False:
+            print("paused")
+            Pause = True
+            key_space_pressed = True
+        elif Pause == True:
+            print("unpause")
+            Pause = False
+            key_space_pressed = True
+    elif not keys[pygame.K_ESCAPE]:
+        key_space_pressed = False
+
+
+    if Pause == False:
+        player.top += SPEED
+    elif Pause == True:
+        player.top += 0
+
+    if Pause == False:
+        for obs in obstacles_list:
+            obs.top += SPEED
+    elif Pause == True:
+        for obs in obstacles_list:
+            obs.top += 0
 
 
     screen.fill((0, 0, 0))  # Draw background after updating player position
@@ -204,7 +235,10 @@ while run:
     for obs in obstacles_list:
             pygame.draw.rect(screen, (255, 255, 255), obs)
 
+    if Pause == True:  # makes screen black to avoid cheating
+      screen.fill((0, 0, 0))
 
+        
     # Update the display
     pygame.display.update()
 
@@ -218,6 +252,7 @@ while run:
 for obs in all_obstacles:
       pygame.draw.rect(screen, (255, 255, 255), obs)
 pygame.display.update()
+
 
 
 pygame.quit()
