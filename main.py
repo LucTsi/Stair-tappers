@@ -16,7 +16,7 @@ SCREEN_HEIGHT = 600
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))  # the screen size
 player = pygame.Rect((250, 400, 25, 25))  # player
 spawn = pygame.Rect((250, 400, 25, 25))  # where the player spawns after death
-PLIM = pygame.image.load("PLAYERMAN.jpg")
+PLIM = pygame.image.load("pluca.png")
 LAVA = pygame.image.load("LAVAF.jpg")
 BG = pygame.image.load("BGST.jpg")
 location = [250, 400]
@@ -150,13 +150,14 @@ while run:
 
 
     # Check for A key press
-    if keys[pygame.K_LEFT] and not key_a_pressed and Pause == False:
+    if (keys[pygame.K_LEFT] and not key_a_pressed and not Pause) or (
+            keys[pygame.K_a] and not key_a_pressed and not Pause):
         if direct == "LEFT":
             player.left = obstacles_list[-1].left + 8
             player.top = obstacles_list[-1].top - 25
             Move = 54
-            Score = Score + 1
-            player.left += Move     # moves everything to the right
+            Score += 1  # Simplified Score increment
+            player.left += Move  # moves everything to the right
             for obs in obstacles_list:  # moves everything to the right
                 obs.left += Move
             obstacles_list.append(new_obs())
@@ -164,27 +165,28 @@ while run:
         elif direct == "RIGHT":
             game_over()
             print("dead")
-    elif not keys[pygame.K_LEFT]:
+    elif not keys[pygame.K_LEFT] and not keys[pygame.K_a]:
         key_a_pressed = False
 
     # Check for D key press
-    if keys[pygame.K_RIGHT] and not key_d_pressed and Pause == False:
+    if (keys[pygame.K_RIGHT] and not key_d_pressed and not Pause) or (
+            keys[pygame.K_d] and not key_d_pressed and not Pause):
         if direct == "RIGHT":
             player.left = obstacles_list[-1].left + 8
             player.top = obstacles_list[-1].top - 25
             Move = 58
-            Score = Score + 1
-            player.left -= Move   # moves everything to the right
-
+            Score += 1  # Simplified Score increment
+            player.left -= Move  # moves everything to the right
             for obs in obstacles_list:
-                obs.left -= Move    # moves everything to the right
+                obs.left -= Move  # moves everything to the right
             obstacles_list.append(new_obs())
             key_d_pressed = True
         elif direct == "LEFT":
             game_over()
             print("dead")
-    elif not keys[pygame.K_RIGHT]:
+    elif not keys[pygame.K_RIGHT] and not keys[pygame.K_d]:
         key_d_pressed = False
+
     # makes the game move down and becomes faster every sec
     if Pause == False:
         SPEED = spedd + 0.0005
