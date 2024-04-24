@@ -1,16 +1,13 @@
 # imports
-import time
 import pygame
 import random
 import sys
-
 
 # CONTROLS
 #   Esc - PAUSE
 #   A/Left Arrow - move left
 #   D/Right Arrow - move right
 #   Space - reset/start game    
-
 
 # pygame.init stuff
 pygame.init()
@@ -66,20 +63,6 @@ def game_over():  # death function
     first = True
     Pause = False
 
-
-def wait():  # vet inte faktiskt vill inte ta bort om allt går sönder
-    global first, dead, Pause
-    waiting = True
-    while waiting:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-                waiting = False
-                Pause = False
-
-
 def wating():  # Wait before game and after death
     global SPEED, first
     waiting = True
@@ -93,7 +76,6 @@ def wating():  # Wait before game and after death
                 SPEED = 3
                 first = False
 
-
 # Function to make the platforms
 def new_obs(): #ny platform för att gå på
     global direct
@@ -105,10 +87,8 @@ def new_obs(): #ny platform för att gå på
         direct = "RIGHT"
         return pygame.Rect((player.left + playermove1, player.top - playermove1, 41, 9))# plr.left = 50   plr.top = 50, har valt dessa nummer eftersom det blir jämnt
 
-
 def Save(): # saves score and highscore
     global Score
-
     try:
         with open('HighScore.txt', 'r') as r:
             Check = r.readline().strip()
@@ -116,16 +96,14 @@ def Save(): # saves score and highscore
                 Check = 0
             else:
                 Check = int(Check)
-
         if Score > Check:
             with open('HighScore.txt', 'w') as f:
                 f.write(str(Score))
     except FileNotFoundError:
-
         with open('HighScore.txt', 'w') as f:
             f.write(str(Score))
 
-def GoUp():
+def GoUp(): # gör att cameran går (inte om den är pausad)
     global spedd
     if Pause == False:
         SPEED = spedd + 0.0005
@@ -189,10 +167,6 @@ while run:
         Pause = False
         first = False
 
-
-    for event in pygame.event.get():  # quit
-        if event.type == pygame.QUIT:
-            run = False
 
 #DEATH
     #kills the player at the botton
@@ -262,10 +236,13 @@ while run:
     GoUp() # makes the camera go up
 
     DispScreen() #draws everything on screen
-    # die if the player touches the red line at the botton
 
 
 #OTHERS
+
+    for event in pygame.event.get():  # quit
+        if event.type == pygame.QUIT:
+            run = False
 
     # Update the display
     pygame.display.update()
