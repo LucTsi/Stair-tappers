@@ -9,7 +9,7 @@ import sys
 #   Esc - PAUSE
 #   A/Left Arrow - move left
 #   D/Right Arrow - move right
-#   Space - reset/start game
+#   Space - reset/start game    
 
 
 # pygame.init stuff
@@ -46,8 +46,14 @@ white = (255, 255, 255)
 green = (0, 255, 0)
 blue = (0, 0, 128)
 Pause = False
+# Variables to track key pressed
+key_a_pressed = False
+key_d_pressed = False
+key_space_pressed = False
+# To see if its the first game
+first = True
 
-
+#functions def
 def game_over():  # death function
     global game_over, SPEED, dead, first, Pause
     Save()
@@ -89,7 +95,7 @@ def wating():  # Wait before game and after death
 
 
 # Function to make the platforms
-def new_obs():
+def new_obs(): #ny platform för att gå på
     global direct
     direction = random.choice(["LEFT", "RIGHT"])
     if direction == "LEFT":
@@ -98,14 +104,6 @@ def new_obs():
     elif direction == "RIGHT":
         direct = "RIGHT"
         return pygame.Rect((player.left + playermove1, player.top - playermove1, 41, 9))# plr.left = 50   plr.top = 50, har valt dessa nummer eftersom det blir jämnt
-
-# Variables to track key pressed
-key_a_pressed = False
-key_d_pressed = False
-key_space_pressed = False
-
-# To see if its the first game
-first = True
 
 
 def Save(): # saves score and highscore
@@ -127,6 +125,45 @@ def Save(): # saves score and highscore
         with open('HighScore.txt', 'w') as f:
             f.write(str(Score))
 
+def GoUp():
+    global spedd
+    if Pause == False:
+        SPEED = spedd + 0.0005
+        spedd = SPEED
+
+    if Pause == False:
+        player.top += SPEED
+    elif Pause == True:
+        player.top += 0
+
+    if Pause == False:
+        for obs in obstacles_list:
+            obs.top += SPEED
+    elif Pause == True:
+        for obs in obstacles_list:
+            obs.top += 0
+
+def DispScreen(): #displays och draw allt på skärmen
+    screen.fill((0, 0, 0))  # Draw background after updating player position
+    #game visuals
+    screen.blit(BG, [1, 1])
+    pygame.draw.rect(screen, (0, 0, 0), player)
+    screen.blit(PLIM, player)
+    pygame.draw.rect(screen, (0, 0, 0), botton)
+    screen.blit(LAVA, botton)
+    #texts och score displays
+    with open('HighScore.txt', 'r') as l:
+        checking = l.readline()
+    high = font.render(str(checking), True, blue)
+    text = font.render(str(Score), True, green)
+    screen.blit(text, textRect)
+    screen.blit(high, TextRect2)
+    #obs display
+    for obs in obstacles_list:
+        pygame.draw.rect(screen, (255, 255, 255), obs)
+    #makes screen black while pausing
+    if Pause == True:  # makes screen black to avoid cheating
+        screen.fill((0, 0, 0))
 
 # The game loop
 while run:
@@ -157,20 +194,23 @@ while run:
         if event.type == pygame.QUIT:
             run = False
 
+#DEATH
+    #kills the player at the botton
+    if player.colliderect(botton):
+        game_over()
+
+# MOVEMENT
+
     # check the key pressed
     keys = pygame.key.get_pressed()
 
-    # die if the player touches the red line at the botton
-    if player.colliderect(botton):
-        game_over()
-    
-    # Check for A key press
+    # Check for A or Larrow key press
     if (keys[pygame.K_LEFT] and not key_a_pressed and not Pause) or (
             keys[pygame.K_a] and not key_a_pressed and not Pause):
         if direct == "LEFT":
             player.left = obstacles_list[-1].left + 8
             player.top = obstacles_list[-1].top - 25
-            Move = 54
+            Move = 54 #54
             Score += 1  # Simplified Score increment
             player.left += Move  # moves everything to the right
             for obs in obstacles_list:  # moves everything to the right
@@ -183,13 +223,13 @@ while run:
     elif not keys[pygame.K_LEFT] and not keys[pygame.K_a]:
         key_a_pressed = False
 
-    # Check for D key press
+    # Check for D or Rarrow key press
     if (keys[pygame.K_RIGHT] and not key_d_pressed and not Pause) or (
             keys[pygame.K_d] and not key_d_pressed and not Pause):
         if direct == "RIGHT":
             player.left = obstacles_list[-1].left + 8
             player.top = obstacles_list[-1].top - 25
-            Move = 58
+            Move = 58 # 58
             Score += 1  # Simplified Score increment
             player.left -= Move  # moves everything to the right
             for obs in obstacles_list:
@@ -202,10 +242,7 @@ while run:
     elif not keys[pygame.K_RIGHT] and not keys[pygame.K_d]:
         key_d_pressed = False
 
-    # makes the game move down and becomes faster every sec
-    if Pause == False:
-        SPEED = spedd + 0.0005
-        spedd = SPEED
+# Pause Functions
 
     if keys[pygame.K_ESCAPE] and not key_space_pressed and first == False:
         print("space")
@@ -220,38 +257,15 @@ while run:
     elif not keys[pygame.K_ESCAPE]:
         key_space_pressed = False
 
-    if Pause == False:
-        player.top += SPEED
-    elif Pause == True:
-        player.top += 0
+#VISUALS
 
-    if Pause == False:
-        for obs in obstacles_list:
-            obs.top += SPEED
-    elif Pause == True:
-        for obs in obstacles_list:
-            obs.top += 0
+    GoUp() # makes the camera go up
 
-    screen.fill((0, 0, 0))  # Draw background after updating player position
-    #draw everything else:
-    screen.blit(BG, [1, 1])
-    pygame.draw.rect(screen, (0, 0, 0), player)
-    screen.blit(PLIM, player)
-    pygame.draw.rect(screen, (0, 0, 0), botton)
-    screen.blit(LAVA, botton)
+    DispScreen() #draws everything on screen
+    # die if the player touches the red line at the botton
 
-    with open('HighScore.txt', 'r') as l:
-        checking = l.readline()
 
-    high = font.render(str(checking), True, blue)
-    text = font.render(str(Score), True, green)
-    screen.blit(text, textRect)
-    screen.blit(high, TextRect2)
-    for obs in obstacles_list:
-        pygame.draw.rect(screen, (255, 255, 255), obs)
-
-    if Pause == True:  # makes screen black to avoid cheating
-        screen.fill((0, 0, 0))
+#OTHERS
 
     # Update the display
     pygame.display.update()
@@ -262,9 +276,6 @@ while run:
     # Cap the frame rate
     pygame.time.Clock().tick(100)
     Save()# saves score
-# At the end of the game loop, you can draw all obstacles
-for obs in all_obstacles:
-    pygame.draw.rect(screen, (255, 255, 255), obs)
-pygame.display.update()
 
+pygame.display.update()
 pygame.quit()
